@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html public "html5 rocks">
 <html>
 <head>
@@ -2457,8 +2455,7 @@
 	var createMovers = function(selector) {
 
 		var movers          = document.querySelectorAll(selector),
-				lastScrollY     = 0,
-				ticking         = false;
+				isScheduled = false;
 
 		/**
 		 * Set everthing up and position all the DOM elements
@@ -2474,33 +2471,16 @@
 		})();
 
 		/**
-		 * Callback for our scroll event - just
-		 * keeps a track on the last scroll value
-		 */
-		function onScroll() {
-			lastScrollY = window.scrollY;
-			requestTick();
-		}
-
-		/**
-		 * Calls rAF if it's not already
-		 * been done already
-		 */
-		function requestTick() {
-			if(!ticking) {
-				requestAnimFrame(update);
-				ticking = true;
-			}
-		}
-
-		/**
 		 * Our animation callback
 		 */
 		function update() {
+			if(isScheduled){return;}
 			var mover               = null,
 					moverTop            = [],
 					halfWindowHeight    = window.innerHeight * 0.5,
-					offset              = 0;
+					lastScrollY = window.scrollY;
+
+			isScheduled = true;
 
 			// first loop is going to do all
 			// the reflows (since we use offsetTop)
@@ -2510,27 +2490,28 @@
 				moverTop[m] = mover.offsetTop;
 			}
 
-			// second loop is going to go through
-			// the movers and add the left class
-			// to the elements' classlist
-			for(var m = 0; m < movers.length; m++) {
+			requestAnimationFrame(function(){
+				// second loop is going to go through
+				// the movers and add the left class
+				// to the elements' classlist
+				for(var m = 0; m < movers.length; m++) {
 
-				mover       = movers[m];
+					mover       = movers[m];
 
-				if(lastScrollY > moverTop[m] - halfWindowHeight) {
-					mover.classList.add('left');
-				} else {
-					mover.classList.remove('left');
+					if(lastScrollY > moverTop[m] - halfWindowHeight) {
+						mover.classList.add('left');
+					} else {
+						mover.classList.remove('left');
+					}
+
 				}
-
-			}
-
-			// allow further rAFs to be called
-			ticking = false;
+				isScheduled = false;
+			});
 		}
 
 		// only listen for scroll events
-		window.addEventListener('scroll', onScroll, false);
+		window.addEventListener('scroll', update, false);
+		window.addEventListener('resize', update, false);
 	};
 
 	// shim layer with setTimeout fallback
