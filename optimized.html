@@ -2462,13 +2462,16 @@
 		 * - normally done with the CSS but, hey, there's 1,500
 		 * of them so we're doing it here!
 		 */
-		(function init() {
+		function init() {
 
-			for(var m = 0; m < movers.length; m++) {
-				movers[m].style.top = (m * 10) + 'px';
-			}
+			requestAnimationFrame(function(){
+				for(var m = 0; m < movers.length; m++) {
+					movers[m].style.top = (m * 10) + 'px';
+				}
+				setTimeout(update);
+			});
 
-		})();
+		}
 
 		/**
 		 * Our animation callback
@@ -2512,6 +2515,7 @@
 		// only listen for scroll events
 		window.addEventListener('scroll', update, false);
 		window.addEventListener('resize', update, false);
+		init();
 	};
 
 	// shim layer with setTimeout fallback
